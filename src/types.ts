@@ -16,11 +16,15 @@ export interface Product {
   description: string;
   image: string;
   price: number | null;
+  price_original: number | null;
+  keywords: string | null;
   link_afiliado: string;
   category_id: number;
   subcategory_id: number;
   featured: number;
   clicks: number;
+  tag_label: string | null;
+  tag_color: string | null;
   created_at: string;
   category_name?: string;
   subcategory_name?: string;

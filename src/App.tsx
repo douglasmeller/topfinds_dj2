@@ -13,10 +13,14 @@ export default function App() {
     return saved ? JSON.parse(saved) : { token: null, user: null };
   });
 
-  useEffect(() => {
+  const fetchCategories = () => {
     fetch("/api/categories")
       .then(res => res.json())
       .then(setCategories);
+  };
+
+  useEffect(() => {
+    fetchCategories();
   }, []);
 
   const handleLogin = (token: string, user: any) => {
@@ -35,7 +39,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Layout categories={categories}><Home categories={categories} /></Layout>} />
         <Route path="/admin/login" element={<AdminLogin onLogin={handleLogin} />} />
-        <Route path="/admin" element={<AdminDashboard auth={auth} onLogout={handleLogout} categories={categories} />} />
+        <Route path="/admin" element={<AdminDashboard auth={auth} onLogout={handleLogout} categories={categories} onRefreshCategories={fetchCategories} />} />
       </Routes>
     </Router>
   );

@@ -21,20 +21,28 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       whileHover={{ y: -4 }}
-      className="group bg-white rounded-2xl border border-neutral-200 overflow-hidden transition-all hover:shadow-xl hover:shadow-black/5 flex flex-col h-full"
+      className="group bg-white rounded-2xl border border-neutral-200 overflow-hidden transition-all hover:shadow-xl hover:shadow-brand/5 flex flex-col h-full"
     >
-      <div className="relative aspect-square overflow-hidden bg-neutral-100">
+      <div className="relative aspect-square overflow-hidden bg-white p-4">
         <img
           src={product.image || "https://picsum.photos/seed/product/400/400"}
           alt={product.name}
-          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+          className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-105"
           referrerPolicy="no-referrer"
           loading="lazy"
         />
-        {product.featured === 1 && (
-          <div className="absolute top-3 left-3 bg-black text-white text-[10px] font-bold uppercase tracking-widest px-2 py-1 rounded-md flex items-center gap-1.5 shadow-lg">
+        {product.featured === 1 ? (
+          <div className="absolute top-3 left-3 bg-brand text-white text-[10px] font-bold uppercase tracking-widest px-2 py-1 rounded-md flex items-center gap-1.5 shadow-lg">
             <Tag className="w-3 h-3" />
             Destaque
+          </div>
+        ) : product.tag_label && (
+          <div 
+            className="absolute top-3 left-3 text-white text-[10px] font-bold uppercase tracking-widest px-2 py-1 rounded-md flex items-center gap-1.5 shadow-lg"
+            style={{ backgroundColor: product.tag_color || "#0F172A" }}
+          >
+            <Tag className="w-3 h-3" />
+            {product.tag_label}
           </div>
         )}
       </div>
@@ -44,7 +52,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-1">
             {product.category_name} • {product.subcategory_name}
           </p>
-          <h3 className="font-bold text-neutral-900 line-clamp-2 group-hover:text-black transition-colors leading-tight">
+          <h3 className="font-bold text-neutral-900 line-clamp-2 group-hover:text-brand transition-colors leading-tight min-h-[2.5rem]">
             {product.name}
           </h3>
         </div>
@@ -53,21 +61,30 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           {product.description}
         </p>
 
-        <div className="mt-auto pt-4 flex items-center justify-between gap-4 border-t border-neutral-100">
-          {product.price && (
-            <div className="flex flex-col">
-              <span className="text-[10px] text-neutral-400 font-medium uppercase tracking-wider">A partir de</span>
-              <span className="text-lg font-black text-black">
-                R$ {product.price.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+        <div className="mt-auto pt-4 flex flex-col gap-3 border-t border-neutral-100">
+          <div className="flex flex-col">
+            {product.price_original && (
+              <span className="text-[10px] text-neutral-400 font-medium line-through">
+                De R$ {product.price_original.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
               </span>
-            </div>
-          )}
+            )}
+            {product.price && (
+              <div className="flex items-baseline gap-1.5">
+                <span className="text-xs text-neutral-500 font-medium uppercase tracking-wider">
+                  Por
+                </span>
+                <span className="text-xl font-black text-brand">
+                  R$ {product.price.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                </span>
+              </div>
+            )}
+          </div>
           <a
             href={product.link_afiliado}
             target="_blank"
             rel="noopener noreferrer"
             onClick={handleClick}
-            className="flex-1 bg-black text-white text-sm font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 hover:bg-neutral-800 transition-all active:scale-95 shadow-lg shadow-black/10"
+            className="w-full bg-brand text-white text-sm font-bold py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 hover:bg-brand/90 transition-all active:scale-95 shadow-lg shadow-brand/10"
           >
             Ver Oferta
             <ExternalLink className="w-4 h-4" />

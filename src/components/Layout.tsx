@@ -68,10 +68,10 @@ export default function Layout({ children, categories }: LayoutProps) {
           </button>
           
           <Link to="/" onClick={() => setCategory(null)} className="flex items-center gap-2 shrink-0">
-            <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center">
+            <div className="w-8 h-8 bg-brand rounded-lg flex items-center justify-center">
               <ShoppingBag className="w-5 h-5 text-white" />
             </div>
-            <span className="font-bold text-xl tracking-tight hidden sm:block">AffiliateHub</span>
+            <span className="font-bold text-xl tracking-tight hidden sm:block">Top Finds</span>
           </Link>
 
           <form onSubmit={handleSearch} className="flex-1 max-w-2xl relative ml-4">
@@ -81,12 +81,12 @@ export default function Layout({ children, categories }: LayoutProps) {
               placeholder="Buscar produtos..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-neutral-100 border-none rounded-full py-2 pl-10 pr-4 focus:ring-2 focus:ring-black/5 transition-all text-sm"
+              className="w-full bg-neutral-100 border-none rounded-full py-2 pl-10 pr-4 focus:ring-2 focus:ring-brand/5 transition-all text-sm"
             />
           </form>
 
           <div className="flex items-center gap-2 ml-auto">
-            <Link to="/admin/login" className="text-sm font-medium text-neutral-500 hover:text-black transition-colors">
+            <Link to="/admin/login" className="text-sm font-medium text-neutral-500 hover:text-brand transition-colors">
               Admin
             </Link>
           </div>
@@ -106,10 +106,10 @@ export default function Layout({ children, categories }: LayoutProps) {
                 onClick={() => setCategory(null)}
                 className={cn(
                   "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-sm font-medium group",
-                  !activeCategoryId ? "bg-black text-white shadow-lg shadow-black/10" : "text-neutral-600 hover:bg-neutral-100"
+                  !activeCategoryId ? "bg-brand text-white shadow-lg shadow-brand/10" : "text-neutral-600 hover:bg-neutral-100"
                 )}
               >
-                <div className={cn("shrink-0 transition-colors", !activeCategoryId ? "text-white" : "text-neutral-400 group-hover:text-black")}>
+                <div className={cn("shrink-0 transition-colors", !activeCategoryId ? "text-white" : "text-neutral-400 group-hover:text-brand")}>
                   <ShoppingBag className="w-5 h-5" />
                 </div>
                 {isSidebarOpen && <span>Todos os Produtos</span>}
@@ -122,10 +122,10 @@ export default function Layout({ children, categories }: LayoutProps) {
                 onClick={() => setCategory(cat.id.toString())}
                 className={cn(
                   "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-sm font-medium group",
-                  activeCategoryId === cat.id.toString() ? "bg-black text-white shadow-lg shadow-black/10" : "text-neutral-600 hover:bg-neutral-100"
+                  activeCategoryId === cat.id.toString() ? "bg-brand text-white shadow-lg shadow-brand/10" : "text-neutral-600 hover:bg-neutral-100"
                 )}
               >
-                <div className={cn("shrink-0 transition-colors", activeCategoryId === cat.id.toString() ? "text-white" : "text-neutral-400 group-hover:text-black")}>
+                <div className={cn("shrink-0 transition-colors", activeCategoryId === cat.id.toString() ? "text-white" : "text-neutral-400 group-hover:text-brand")}>
                   {getIcon(cat.name)}
                 </div>
                 {isSidebarOpen && <span>{cat.name}</span>}
@@ -144,7 +144,7 @@ export default function Layout({ children, categories }: LayoutProps) {
                   onClick={() => setSubcategory(null)}
                   className={cn(
                     "px-4 py-1.5 rounded-full text-xs font-semibold transition-all border",
-                    !activeSubcategoryId ? "bg-neutral-900 text-white border-neutral-900" : "bg-white text-neutral-600 border-neutral-200 hover:border-neutral-400"
+                    !activeSubcategoryId ? "bg-brand text-white border-brand" : "bg-white text-neutral-600 border-neutral-200 hover:border-neutral-400"
                   )}
                 >
                   Ver Tudo
@@ -155,7 +155,7 @@ export default function Layout({ children, categories }: LayoutProps) {
                     onClick={() => setSubcategory(sub.id.toString())}
                     className={cn(
                       "px-4 py-1.5 rounded-full text-xs font-semibold transition-all border",
-                      activeSubcategoryId === sub.id.toString() ? "bg-neutral-900 text-white border-neutral-900" : "bg-white text-neutral-600 border-neutral-200 hover:border-neutral-400"
+                      activeSubcategoryId === sub.id.toString() ? "bg-brand text-white border-brand" : "bg-white text-neutral-600 border-neutral-200 hover:border-neutral-400"
                     )}
                   >
                     {sub.name}

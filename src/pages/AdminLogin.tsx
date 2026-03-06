@@ -45,10 +45,10 @@ export default function AdminLogin({ onLogin }: AdminLoginProps) {
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="w-full max-w-md bg-white rounded-[2rem] shadow-2xl shadow-black/5 border border-neutral-200 p-8 md:p-10"
+        className="w-full max-w-md bg-white rounded-[2rem] shadow-2xl shadow-brand/5 border border-neutral-200 p-8 md:p-10"
       >
         <div className="flex flex-col items-center text-center mb-8">
-          <div className="w-16 h-16 bg-black rounded-2xl flex items-center justify-center mb-4 shadow-xl shadow-black/20">
+          <div className="w-16 h-16 bg-brand rounded-2xl flex items-center justify-center mb-4 shadow-xl shadow-brand/20">
             <ShoppingBag className="w-8 h-8 text-white" />
           </div>
           <h1 className="text-2xl font-black tracking-tight text-neutral-900">Painel Administrativo</h1>
@@ -72,7 +72,7 @@ export default function AdminLogin({ onLogin }: AdminLoginProps) {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="admin@exemplo.com"
-                className="w-full bg-neutral-50 border border-neutral-200 rounded-xl py-3.5 pl-11 pr-4 focus:ring-2 focus:ring-black/5 focus:border-black transition-all text-sm outline-none"
+                className="w-full bg-neutral-50 border border-neutral-200 rounded-xl py-3.5 pl-11 pr-4 focus:ring-2 focus:ring-brand/5 focus:border-brand transition-all text-sm outline-none"
               />
             </div>
           </div>
@@ -87,7 +87,7 @@ export default function AdminLogin({ onLogin }: AdminLoginProps) {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full bg-neutral-50 border border-neutral-200 rounded-xl py-3.5 pl-11 pr-4 focus:ring-2 focus:ring-black/5 focus:border-black transition-all text-sm outline-none"
+                className="w-full bg-neutral-50 border border-neutral-200 rounded-xl py-3.5 pl-11 pr-4 focus:ring-2 focus:ring-brand/5 focus:border-brand transition-all text-sm outline-none"
               />
             </div>
           </div>
@@ -95,7 +95,7 @@ export default function AdminLogin({ onLogin }: AdminLoginProps) {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-black text-white font-bold py-4 rounded-xl flex items-center justify-center gap-2 hover:bg-neutral-800 transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed shadow-xl shadow-black/10 mt-2"
+            className="w-full bg-brand text-white font-bold py-4 rounded-xl flex items-center justify-center gap-2 hover:bg-brand/90 transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed shadow-xl shadow-brand/10 mt-2"
           >
             {loading ? (
               <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
@@ -111,7 +111,7 @@ export default function AdminLogin({ onLogin }: AdminLoginProps) {
         <div className="mt-8 pt-8 border-t border-neutral-100 text-center">
           <button
             onClick={() => navigate("/")}
-            className="text-sm font-semibold text-neutral-400 hover:text-black transition-colors"
+            className="text-sm font-semibold text-neutral-400 hover:text-brand transition-colors"
           >
             Voltar para o site
           </button>

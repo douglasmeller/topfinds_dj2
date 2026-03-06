@@ -39,7 +39,7 @@ export default function Home({ categories }: HomeProps) {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <div className="w-8 h-8 border-4 border-black border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-8 h-8 border-4 border-brand border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
   }
@@ -50,11 +50,8 @@ export default function Home({ categories }: HomeProps) {
       {!search && !categoryId && !subcategoryId && featuredProducts.length > 0 && (
         <section>
           <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center text-amber-600">
-              <Sparkles className="w-6 h-6" />
-            </div>
             <div>
-              <h2 className="text-2xl font-black tracking-tight">Destaques da Semana</h2>
+              <h2 className="text-2xl font-black tracking-tight">Destaques</h2>
               <p className="text-sm text-neutral-500">As melhores ofertas selecionadas para você</p>
             </div>
           </div>
@@ -69,9 +66,6 @@ export default function Home({ categories }: HomeProps) {
       {/* Main Catalog */}
       <section>
         <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center text-blue-600">
-            <TrendingUp className="w-6 h-6" />
-          </div>
           <div>
             <h2 className="text-2xl font-black tracking-tight">
               {search ? `Resultados para "${search}"` : categoryId ? "Catálogo de Produtos" : "Todas as Ofertas"}
