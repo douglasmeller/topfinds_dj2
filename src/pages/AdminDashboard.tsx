@@ -12,6 +12,7 @@ import {
   ExternalLink, 
   MousePointer2, 
   Check, 
+  Menu,
   X,
   Image as ImageIcon,
   Settings,
@@ -19,7 +20,8 @@ import {
   Clock,
   Filter,
   Tag,
-  GripVertical
+  GripVertical,
+  AlertTriangle
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { useForm } from "react-hook-form";
@@ -88,10 +90,7 @@ function SortableSubcategory({ sub, onEdit, onDelete }: any) {
       </div>
       <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
         <button
-          onClick={() => {
-            const name = prompt("Novo nome da subcategoria:", sub.name);
-            if (name) onEdit(sub.id, name);
-          }}
+          onClick={() => onEdit(sub.id, sub.name)}
           className="p-1 text-neutral-400 hover:text-brand"
         >
           <Edit3 className="w-3 h-3" />
@@ -124,7 +123,31 @@ export default function AdminDashboard({ auth, onLogout, categories, onRefreshCa
     category_id: "",
     subcategory_id: ""
   });
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [modalConfig, setModalConfig] = useState<{
+    isOpen: boolean;
+    title: string;
+    message?: string;
+    type: 'prompt' | 'confirm' | 'alert';
+    inputValue?: string;
+    onConfirm?: (val?: string) => void;
+  }>({ isOpen: false, title: '', type: 'alert' });
+
   const navigate = useNavigate();
+
+  const showAlert = (title: string, message?: string) => {
+    setModalConfig({ isOpen: true, title, message, type: 'alert' });
+  };
+
+  const showConfirm = (title: string, message: string, onConfirm: () => void) => {
+    setModalConfig({ isOpen: true, title, message, type: 'confirm', onConfirm });
+  };
+
+  const showPrompt = (title: string, defaultValue: string, onConfirm: (val: string) => void) => {
+    setModalConfig({ isOpen: true, title, type: 'prompt', inputValue: defaultValue, onConfirm });
+  };
+
+  const closeModal = () => setModalConfig({ ...modalConfig, isOpen: false });
 
   const { register, handleSubmit, reset, watch, setValue } = useForm();
   const selectedCategoryId = watch("category_id");
@@ -186,15 +209,16 @@ export default function AdminDashboard({ auth, onLogout, categories, onRefreshCa
   };
 
   const deleteProduct = async (id: number) => {
-    if (!confirm("Tem certeza que deseja excluir este produto?")) return;
-    const res = await fetch(`/api/products/${id}`, {
-      method: "DELETE",
-      headers: { Authorization: `Bearer ${auth.token}` }
+    showConfirm("Excluir Produto", "Tem certeza que deseja excluir este produto?", async () => {
+      const res = await fetch(`/api/products/${id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${auth.token}` }
+      });
+      if (res.ok) {
+        fetchProducts();
+        fetchStats();
+      }
     });
-    if (res.ok) {
-      fetchProducts();
-      fetchStats();
-    }
   };
 
   const handleAddCategory = async (name: string) => {
@@ -207,7 +231,7 @@ export default function AdminDashboard({ auth, onLogout, categories, onRefreshCa
       onRefreshCategories();
     } else {
       const data = await res.json();
-      alert(data.error || "Erro ao adicionar categoria");
+      showAlert("Erro", data.error || "Erro ao adicionar categoria");
     }
   };
 
@@ -221,22 +245,23 @@ export default function AdminDashboard({ auth, onLogout, categories, onRefreshCa
       onRefreshCategories();
     } else {
       const data = await res.json();
-      alert(data.error || "Erro ao editar categoria");
+      showAlert("Erro", data.error || "Erro ao editar categoria");
     }
   };
 
   const handleDeleteCategory = async (id: number) => {
-    if (!confirm("Isso excluirá todos os produtos desta categoria. Continuar?")) return;
-    const res = await fetch(`/api/categories/${id}`, {
-      method: "DELETE",
-      headers: { Authorization: `Bearer ${auth.token}` }
+    showConfirm("Excluir Categoria", "Isso excluirá todos os produtos desta categoria. Continuar?", async () => {
+      const res = await fetch(`/api/categories/${id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${auth.token}` }
+      });
+      if (res.ok) {
+        onRefreshCategories();
+      } else {
+        const data = await res.json();
+        showAlert("Erro", data.error || "Erro ao excluir categoria");
+      }
     });
-    if (res.ok) {
-      onRefreshCategories();
-    } else {
-      const data = await res.json();
-      alert(data.error || "Erro ao excluir categoria");
-    }
   };
 
   const handleAddSubcategory = async (name: string, category_id: number) => {
@@ -249,7 +274,7 @@ export default function AdminDashboard({ auth, onLogout, categories, onRefreshCa
       onRefreshCategories();
     } else {
       const data = await res.json();
-      alert(data.error || "Erro ao adicionar subcategoria");
+      showAlert("Erro", data.error || "Erro ao adicionar subcategoria");
     }
   };
 
@@ -263,22 +288,23 @@ export default function AdminDashboard({ auth, onLogout, categories, onRefreshCa
       onRefreshCategories();
     } else {
       const data = await res.json();
-      alert(data.error || "Erro ao editar subcategoria");
+      showAlert("Erro", data.error || "Erro ao editar subcategoria");
     }
   };
 
   const handleDeleteSubcategory = async (id: number) => {
-    if (!confirm("Isso excluirá todos os produtos desta subcategoria. Continuar?")) return;
-    const res = await fetch(`/api/subcategories/${id}`, {
-      method: "DELETE",
-      headers: { Authorization: `Bearer ${auth.token}` }
+    showConfirm("Excluir Subcategoria", "Isso excluirá todos os produtos desta subcategoria. Continuar?", async () => {
+      const res = await fetch(`/api/subcategories/${id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${auth.token}` }
+      });
+      if (res.ok) {
+        onRefreshCategories();
+      } else {
+        const data = await res.json();
+        showAlert("Erro", data.error || "Erro ao excluir subcategoria");
+      }
     });
-    if (res.ok) {
-      onRefreshCategories();
-    } else {
-      const data = await res.json();
-      alert(data.error || "Erro ao excluir subcategoria");
-    }
   };
 
   const handleDragEnd = async (event: DragEndEvent, categoryId: number) => {
@@ -335,67 +361,164 @@ export default function AdminDashboard({ auth, onLogout, categories, onRefreshCa
   return (
     <div className="min-h-screen bg-neutral-50 flex font-sans">
       {/* Sidebar */}
-      <aside className="w-64 bg-brand text-white flex flex-col sticky top-0 h-screen">
-        <div className="p-8 flex items-center gap-3">
-          <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
-            <Package className="w-5 h-5 text-brand" />
-          </div>
-          <span className="font-black text-lg tracking-tight">AdminHub</span>
+      <motion.aside 
+        initial={false}
+        animate={{ width: isSidebarOpen ? 256 : 80 }}
+        className="bg-brand text-white flex flex-col sticky top-0 h-screen overflow-hidden shrink-0 z-50"
+      >
+        <div className="p-6 flex items-center gap-3 h-20">
+          <button 
+            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+            className="w-8 h-8 bg-white/10 hover:bg-white/20 rounded-lg flex items-center justify-center shrink-0 transition-colors"
+          >
+            {isSidebarOpen ? <X className="w-5 h-5 text-white" /> : <Menu className="w-5 h-5 text-white" />}
+          </button>
+          <AnimatePresence>
+            {isSidebarOpen && (
+              <motion.span 
+                initial={{ opacity: 0, width: 0 }}
+                animate={{ opacity: 1, width: "auto" }}
+                exit={{ opacity: 0, width: 0 }}
+                className="font-black text-lg tracking-tight whitespace-nowrap overflow-hidden"
+              >
+                AdminHub
+              </motion.span>
+            )}
+          </AnimatePresence>
         </div>
 
-        <nav className="flex-1 px-4 space-y-2">
+        <nav className="flex-1 px-4 space-y-2 overflow-y-auto overflow-x-hidden no-scrollbar">
           <button
             onClick={() => { setActiveTab("stats"); setEditingProduct(null); }}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-sm font-bold ${activeTab === "stats" ? "bg-white/10 text-white" : "text-neutral-400 hover:text-white hover:bg-white/5"}`}
+            className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all text-sm font-bold ${activeTab === "stats" ? "bg-white/10 text-white" : "text-neutral-400 hover:text-white hover:bg-white/5"}`}
+            title={!isSidebarOpen ? "Painel de Gestão" : undefined}
           >
-            <LayoutDashboard className="w-5 h-5" />
-            Painel de Gestão
+            <div className="shrink-0 flex items-center justify-center w-6">
+              <LayoutDashboard className="w-5 h-5" />
+            </div>
+            <AnimatePresence>
+              {isSidebarOpen && (
+                <motion.span
+                  initial={{ opacity: 0, width: 0 }}
+                  animate={{ opacity: 1, width: "auto" }}
+                  exit={{ opacity: 0, width: 0 }}
+                  className="whitespace-nowrap overflow-hidden"
+                >
+                  Painel de Gestão
+                </motion.span>
+              )}
+            </AnimatePresence>
           </button>
           <button
             onClick={() => { setActiveTab("products"); setEditingProduct(null); }}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-sm font-bold ${activeTab === "products" ? "bg-white/10 text-white" : "text-neutral-400 hover:text-white hover:bg-white/5"}`}
+            className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all text-sm font-bold ${activeTab === "products" ? "bg-white/10 text-white" : "text-neutral-400 hover:text-white hover:bg-white/5"}`}
+            title={!isSidebarOpen ? "Produtos" : undefined}
           >
-            <Package className="w-5 h-5" />
-            Produtos
+            <div className="shrink-0 flex items-center justify-center w-6">
+              <Package className="w-5 h-5" />
+            </div>
+            <AnimatePresence>
+              {isSidebarOpen && (
+                <motion.span
+                  initial={{ opacity: 0, width: 0 }}
+                  animate={{ opacity: 1, width: "auto" }}
+                  exit={{ opacity: 0, width: 0 }}
+                  className="whitespace-nowrap overflow-hidden"
+                >
+                  Produtos
+                </motion.span>
+              )}
+            </AnimatePresence>
           </button>
           <button
             onClick={() => { setActiveTab("categories"); setEditingProduct(null); }}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-sm font-bold ${activeTab === "categories" ? "bg-white/10 text-white" : "text-neutral-400 hover:text-white hover:bg-white/5"}`}
+            className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all text-sm font-bold ${activeTab === "categories" ? "bg-white/10 text-white" : "text-neutral-400 hover:text-white hover:bg-white/5"}`}
+            title={!isSidebarOpen ? "Categorias" : undefined}
           >
-            <Settings className="w-5 h-5" />
-            Categorias
+            <div className="shrink-0 flex items-center justify-center w-6">
+              <Settings className="w-5 h-5" />
+            </div>
+            <AnimatePresence>
+              {isSidebarOpen && (
+                <motion.span
+                  initial={{ opacity: 0, width: 0 }}
+                  animate={{ opacity: 1, width: "auto" }}
+                  exit={{ opacity: 0, width: 0 }}
+                  className="whitespace-nowrap overflow-hidden"
+                >
+                  Categorias
+                </motion.span>
+              )}
+            </AnimatePresence>
           </button>
           <button
             onClick={() => setActiveTab("add")}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-sm font-bold ${activeTab === "add" ? "bg-white/10 text-white" : "text-neutral-400 hover:text-white hover:bg-white/5"}`}
+            className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all text-sm font-bold ${activeTab === "add" ? "bg-white/10 text-white" : "text-neutral-400 hover:text-white hover:bg-white/5"}`}
+            title={!isSidebarOpen ? (editingProduct ? "Editar Produto" : "Novo Produto") : undefined}
           >
-            <Plus className="w-5 h-5" />
-            {editingProduct ? "Editar Produto" : "Novo Produto"}
+            <div className="shrink-0 flex items-center justify-center w-6">
+              <Plus className="w-5 h-5" />
+            </div>
+            <AnimatePresence>
+              {isSidebarOpen && (
+                <motion.span
+                  initial={{ opacity: 0, width: 0 }}
+                  animate={{ opacity: 1, width: "auto" }}
+                  exit={{ opacity: 0, width: 0 }}
+                  className="whitespace-nowrap overflow-hidden"
+                >
+                  {editingProduct ? "Editar Produto" : "Novo Produto"}
+                </motion.span>
+              )}
+            </AnimatePresence>
           </button>
         </nav>
 
         <div className="p-4 mt-auto border-t border-white/10">
-          <div className="flex items-center gap-3 px-4 py-3 mb-4">
-            <div className="w-8 h-8 bg-neutral-800 rounded-full flex items-center justify-center text-xs font-bold">
+          <div className="flex items-center gap-3 px-2 py-3 mb-4">
+            <div className="w-8 h-8 bg-neutral-800 rounded-full flex items-center justify-center text-xs font-bold shrink-0">
               {auth.user?.name[0]}
             </div>
-            <div className="flex flex-col">
-              <span className="text-sm font-bold truncate max-w-[120px]">{auth.user?.name}</span>
-              <span className="text-[10px] text-neutral-500 uppercase tracking-widest">Administrador</span>
-            </div>
+            <AnimatePresence>
+              {isSidebarOpen && (
+                <motion.div
+                  initial={{ opacity: 0, width: 0 }}
+                  animate={{ opacity: 1, width: "auto" }}
+                  exit={{ opacity: 0, width: 0 }}
+                  className="flex flex-col overflow-hidden whitespace-nowrap"
+                >
+                  <span className="text-sm font-bold truncate max-w-[120px]">{auth.user?.name}</span>
+                  <span className="text-[10px] text-neutral-500 uppercase tracking-widest">Administrador</span>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
           <button
             onClick={onLogout}
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-red-400 hover:text-red-300 hover:bg-red-400/10 transition-all text-sm font-bold"
+            className="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-red-400 hover:text-red-300 hover:bg-red-400/10 transition-all text-sm font-bold"
+            title={!isSidebarOpen ? "Sair" : undefined}
           >
-            <LogOut className="w-5 h-5" />
-            Sair
+            <div className="shrink-0 flex items-center justify-center w-6">
+              <LogOut className="w-5 h-5" />
+            </div>
+            <AnimatePresence>
+              {isSidebarOpen && (
+                <motion.span
+                  initial={{ opacity: 0, width: 0 }}
+                  animate={{ opacity: 1, width: "auto" }}
+                  exit={{ opacity: 0, width: 0 }}
+                  className="whitespace-nowrap overflow-hidden"
+                >
+                  Sair
+                </motion.span>
+              )}
+            </AnimatePresence>
           </button>
         </div>
-      </aside>
+      </motion.aside>
 
       {/* Main Content */}
-      <main className="flex-1 p-8 overflow-y-auto">
+      <main className="flex-1 p-8 overflow-y-auto min-w-0">
         <header className="flex items-center justify-between mb-10">
           <div>
             <h1 className="text-3xl font-black tracking-tight text-neutral-900">
@@ -546,8 +669,9 @@ export default function AdminDashboard({ auth, onLogout, categories, onRefreshCa
                   <h2 className="text-xl font-black">Estrutura de Categorias</h2>
                   <button 
                     onClick={() => {
-                      const name = prompt("Nome da nova categoria:");
-                      if (name) handleAddCategory(name);
+                      showPrompt("Nova Categoria", "", (name) => {
+                        if (name) handleAddCategory(name);
+                      });
                     }}
                     className="bg-brand text-white px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2"
                   >
@@ -564,8 +688,9 @@ export default function AdminDashboard({ auth, onLogout, categories, onRefreshCa
                         <div className="flex items-center gap-1">
                           <button 
                             onClick={() => {
-                              const name = prompt("Novo nome da categoria:", cat.name);
-                              if (name) handleEditCategory(cat.id, name);
+                              showPrompt("Editar Categoria", cat.name, (name) => {
+                                if (name) handleEditCategory(cat.id, name);
+                              });
                             }}
                             className="p-1.5 text-neutral-400 hover:text-brand transition-colors"
                           >
@@ -595,7 +720,11 @@ export default function AdminDashboard({ auth, onLogout, categories, onRefreshCa
                                 <SortableSubcategory 
                                   key={sub.id} 
                                   sub={sub} 
-                                  onEdit={handleEditSubcategory}
+                                  onEdit={(id: number, name: string) => {
+                                    showPrompt("Editar Subcategoria", name, (newName) => {
+                                      if (newName) handleEditSubcategory(id, newName);
+                                    });
+                                  }}
                                   onDelete={handleDeleteSubcategory}
                                 />
                               ))}
@@ -604,8 +733,9 @@ export default function AdminDashboard({ auth, onLogout, categories, onRefreshCa
                         </DndContext>
                         <button 
                           onClick={() => {
-                            const name = prompt("Nome da nova subcategoria:");
-                            if (name) handleAddSubcategory(name, cat.id);
+                            showPrompt("Nova Subcategoria", "", (name) => {
+                              if (name) handleAddSubcategory(name, cat.id);
+                            });
                           }}
                           className="w-full py-2 border-2 border-dashed border-neutral-200 rounded-lg text-[10px] font-bold text-neutral-400 uppercase tracking-widest hover:border-brand hover:text-brand transition-all"
                         >
@@ -863,6 +993,75 @@ export default function AdminDashboard({ auth, onLogout, categories, onRefreshCa
           )}
         </AnimatePresence>
       </main>
+
+      {/* Custom Modal */}
+      <AnimatePresence>
+        {modalConfig.isOpen && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="bg-white rounded-3xl shadow-xl w-full max-w-md overflow-hidden"
+            >
+              <div className="p-6">
+                <div className="flex items-center gap-3 mb-4">
+                  {modalConfig.type === 'alert' && <AlertTriangle className="w-6 h-6 text-amber-500" />}
+                  <h3 className="text-xl font-black text-neutral-900">{modalConfig.title}</h3>
+                </div>
+                
+                {modalConfig.message && (
+                  <p className="text-neutral-600 text-sm mb-6">{modalConfig.message}</p>
+                )}
+
+                {modalConfig.type === 'prompt' && (
+                  <input
+                    type="text"
+                    autoFocus
+                    value={modalConfig.inputValue}
+                    onChange={(e) => setModalConfig({ ...modalConfig, inputValue: e.target.value })}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && modalConfig.inputValue?.trim()) {
+                        modalConfig.onConfirm?.(modalConfig.inputValue.trim());
+                        closeModal();
+                      }
+                    }}
+                    className="w-full bg-neutral-50 border border-neutral-200 rounded-xl py-3 px-4 focus:ring-2 focus:ring-brand/5 focus:border-brand transition-all text-sm outline-none mb-6"
+                    placeholder="Digite aqui..."
+                  />
+                )}
+
+                <div className="flex items-center justify-end gap-3">
+                  {modalConfig.type !== 'alert' && (
+                    <button
+                      onClick={closeModal}
+                      className="px-4 py-2 rounded-xl text-sm font-bold text-neutral-500 hover:bg-neutral-100 transition-colors"
+                    >
+                      Cancelar
+                    </button>
+                  )}
+                  <button
+                    onClick={() => {
+                      if (modalConfig.type === 'prompt') {
+                        if (modalConfig.inputValue?.trim()) {
+                          modalConfig.onConfirm?.(modalConfig.inputValue.trim());
+                          closeModal();
+                        }
+                      } else {
+                        modalConfig.onConfirm?.();
+                        closeModal();
+                      }
+                    }}
+                    className="px-6 py-2 bg-brand text-white rounded-xl text-sm font-bold hover:bg-brand/90 transition-colors shadow-lg shadow-brand/20"
+                  >
+                    {modalConfig.type === 'alert' ? 'OK' : 'Confirmar'}
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

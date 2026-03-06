@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { Category, Subcategory } from "../types";
-import { Menu, X, Search, ChevronRight, ShoppingBag, Laptop, Home as HomeIcon, Shirt } from "lucide-react";
+import { Menu, X, Search, ChevronRight, ChevronLeft, ChevronDown, ShoppingBag, Laptop, Home as HomeIcon, Shirt } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
@@ -17,8 +17,10 @@ interface LayoutProps {
 
 export default function Layout({ children, categories }: LayoutProps) {
   const [searchParams, setSearchParams] = useSearchParams();
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState(searchParams.get("search") || "");
+  const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({});
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   const activeCategoryId = searchParams.get("category");
   const activeSubcategoryId = searchParams.get("subcategory");
@@ -46,6 +48,22 @@ export default function Layout({ children, categories }: LayoutProps) {
     setSearchParams(newParams);
   };
 
+  const toggleCategory = (categoryId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setExpandedCategories(prev => ({ ...prev, [categoryId]: !prev[categoryId] }));
+    if (!isSidebarOpen) setIsSidebarOpen(true);
+  };
+
+  const scroll = (direction: 'left' | 'right') => {
+    if (scrollContainerRef.current) {
+      const scrollAmount = 200;
+      scrollContainerRef.current.scrollBy({
+        left: direction === 'left' ? -scrollAmount : scrollAmount,
+        behavior: 'smooth'
+      });
+    }
+  };
+
   const getIcon = (name: string) => {
     switch (name.toLowerCase()) {
       case "tech": return <Laptop className="w-5 h-5" />;
@@ -62,7 +80,7 @@ export default function Layout({ children, categories }: LayoutProps) {
         <div className="flex items-center gap-4 w-full max-w-7xl mx-auto">
           <button 
             onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-            className="p-2 hover:bg-neutral-100 rounded-lg transition-colors md:hidden"
+            className="p-2 hover:bg-neutral-100 rounded-lg transition-colors"
           >
             {isSidebarOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
@@ -99,9 +117,8 @@ export default function Layout({ children, categories }: LayoutProps) {
           "fixed md:sticky top-16 h-[calc(100vh-4rem)] bg-white border-r border-neutral-200 transition-all duration-300 z-40",
           isSidebarOpen ? "w-64 left-0" : "w-0 -left-64 md:w-20 md:left-0"
         )}>
-          <div className="p-4 flex flex-col gap-2 overflow-y-auto h-full">
+          <div className="p-4 flex flex-col gap-2 overflow-y-auto h-full overflow-x-hidden">
             <div className="mb-4">
-              <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest px-3 mb-2">Categorias</p>
               <button
                 onClick={() => setCategory(null)}
                 className={cn(
@@ -112,24 +129,101 @@ export default function Layout({ children, categories }: LayoutProps) {
                 <div className={cn("shrink-0 transition-colors", !activeCategoryId ? "text-white" : "text-neutral-400 group-hover:text-brand")}>
                   <ShoppingBag className="w-5 h-5" />
                 </div>
-                {isSidebarOpen && <span>Todos os Produtos</span>}
+                <AnimatePresence>
+                  {isSidebarOpen && (
+                    <motion.span
+                      initial={{ opacity: 0, width: 0 }}
+                      animate={{ opacity: 1, width: "auto" }}
+                      exit={{ opacity: 0, width: 0 }}
+                      className="whitespace-nowrap overflow-hidden"
+                    >
+                      Todos os Produtos
+                    </motion.span>
+                  )}
+                </AnimatePresence>
               </button>
             </div>
 
             {categories.map((cat) => (
-              <button
-                key={cat.id}
-                onClick={() => setCategory(cat.id.toString())}
-                className={cn(
-                  "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-sm font-medium group",
-                  activeCategoryId === cat.id.toString() ? "bg-brand text-white shadow-lg shadow-brand/10" : "text-neutral-600 hover:bg-neutral-100"
-                )}
-              >
-                <div className={cn("shrink-0 transition-colors", activeCategoryId === cat.id.toString() ? "text-white" : "text-neutral-400 group-hover:text-brand")}>
-                  {getIcon(cat.name)}
+              <div key={cat.id} className="flex flex-col">
+                <div className="flex items-center">
+                  <button
+                    onClick={() => setCategory(cat.id.toString())}
+                    className={cn(
+                      "flex-1 flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-sm font-medium group",
+                      activeCategoryId === cat.id.toString() ? "bg-brand text-white shadow-lg shadow-brand/10" : "text-neutral-600 hover:bg-neutral-100"
+                    )}
+                  >
+                    <div className={cn("shrink-0 transition-colors", activeCategoryId === cat.id.toString() ? "text-white" : "text-neutral-400 group-hover:text-brand")}>
+                      {getIcon(cat.name)}
+                    </div>
+                    <AnimatePresence>
+                      {isSidebarOpen && (
+                        <motion.span
+                          initial={{ opacity: 0, width: 0 }}
+                          animate={{ opacity: 1, width: "auto" }}
+                          exit={{ opacity: 0, width: 0 }}
+                          className="flex-1 text-left whitespace-nowrap overflow-hidden"
+                        >
+                          {cat.name}
+                        </motion.span>
+                      )}
+                    </AnimatePresence>
+                  </button>
+                  <AnimatePresence>
+                    {isSidebarOpen && cat.subcategories.length > 0 && (
+                      <motion.button
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.8 }}
+                        onClick={(e) => toggleCategory(cat.id.toString(), e)}
+                        className="p-2 text-neutral-400 hover:text-brand transition-colors shrink-0"
+                      >
+                        <ChevronDown className={cn("w-4 h-4 transition-transform", expandedCategories[cat.id] ? "rotate-180" : "")} />
+                      </motion.button>
+                    )}
+                  </AnimatePresence>
                 </div>
-                {isSidebarOpen && <span>{cat.name}</span>}
-              </button>
+                
+                <AnimatePresence>
+                  {isSidebarOpen && expandedCategories[cat.id] && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      className="overflow-hidden flex flex-col gap-1 pl-11 pr-2 py-1"
+                    >
+                      <button
+                        onClick={() => {
+                          setCategory(cat.id.toString());
+                          setSubcategory(null);
+                        }}
+                        className={cn(
+                          "text-left text-xs py-1.5 px-2 rounded-lg transition-colors",
+                          activeCategoryId === cat.id.toString() && !activeSubcategoryId ? "text-brand font-bold bg-brand/5" : "text-neutral-500 hover:text-neutral-700 hover:bg-neutral-100"
+                        )}
+                      >
+                        Ver Tudo
+                      </button>
+                      {cat.subcategories.map(sub => (
+                        <button
+                          key={sub.id}
+                          onClick={() => {
+                            setCategory(cat.id.toString());
+                            setSubcategory(sub.id.toString());
+                          }}
+                          className={cn(
+                            "text-left text-xs py-1.5 px-2 rounded-lg transition-colors",
+                            activeSubcategoryId === sub.id.toString() ? "text-brand font-bold bg-brand/5" : "text-neutral-500 hover:text-neutral-700 hover:bg-neutral-100"
+                          )}
+                        >
+                          {sub.name}
+                        </button>
+                      ))}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
             ))}
           </div>
         </aside>
@@ -137,13 +231,23 @@ export default function Layout({ children, categories }: LayoutProps) {
         {/* Main Content */}
         <main className="flex-1 flex flex-col min-w-0">
           {/* Subcategories Bar */}
-          {activeCategory && (
-            <div className="bg-white border-b border-neutral-200 sticky top-16 z-30 overflow-x-auto no-scrollbar">
-              <div className="flex items-center gap-2 p-3 px-6 min-w-max">
+          {activeCategory && activeCategory.subcategories.length > 0 && (
+            <div className="bg-white border-b border-neutral-200 sticky top-16 z-30 relative group">
+              <button 
+                onClick={() => scroll('left')}
+                className="absolute left-0 top-0 bottom-0 w-10 bg-gradient-to-r from-white via-white to-transparent flex items-center justify-start pl-2 opacity-0 group-hover:opacity-100 transition-opacity z-10"
+              >
+                <ChevronLeft className="w-4 h-4 text-neutral-600" />
+              </button>
+              
+              <div 
+                ref={scrollContainerRef}
+                className="flex items-center gap-2 p-3 px-6 overflow-x-auto no-scrollbar scroll-smooth"
+              >
                 <button
                   onClick={() => setSubcategory(null)}
                   className={cn(
-                    "px-4 py-1.5 rounded-full text-xs font-semibold transition-all border",
+                    "px-4 py-1.5 rounded-full text-xs font-semibold transition-all border whitespace-nowrap",
                     !activeSubcategoryId ? "bg-brand text-white border-brand" : "bg-white text-neutral-600 border-neutral-200 hover:border-neutral-400"
                   )}
                 >
@@ -154,7 +258,7 @@ export default function Layout({ children, categories }: LayoutProps) {
                     key={sub.id}
                     onClick={() => setSubcategory(sub.id.toString())}
                     className={cn(
-                      "px-4 py-1.5 rounded-full text-xs font-semibold transition-all border",
+                      "px-4 py-1.5 rounded-full text-xs font-semibold transition-all border whitespace-nowrap",
                       activeSubcategoryId === sub.id.toString() ? "bg-brand text-white border-brand" : "bg-white text-neutral-600 border-neutral-200 hover:border-neutral-400"
                     )}
                   >
@@ -162,6 +266,13 @@ export default function Layout({ children, categories }: LayoutProps) {
                   </button>
                 ))}
               </div>
+
+              <button 
+                onClick={() => scroll('right')}
+                className="absolute right-0 top-0 bottom-0 w-10 bg-gradient-to-l from-white via-white to-transparent flex items-center justify-end pr-2 opacity-0 group-hover:opacity-100 transition-opacity z-10"
+              >
+                <ChevronRight className="w-4 h-4 text-neutral-600" />
+              </button>
             </div>
           )}
 
